@@ -11,7 +11,8 @@ from vectorstore.embedder import embed_query
 
 TOP_K = 8
 PER_SOURCE_CAP = 2     # max chunks from one source in the final top-k
-CANDIDATE_POOL = 24    # over-fetch, then diversify down to TOP_K
+CANDIDATE_POOL = 24    # over-fetch (no reranker), then diversify down to TOP_K
+RERANK_POOL = 60       # wider over-fetch when reranking, so buried chunks are seen
 
 _collection = None
 
@@ -31,25 +32,31 @@ def get_collection():
     return _collection
 
 
-def retrieve(query: str, k: int = TOP_K, per_source_cap: int = PER_SOURCE_CAP) -> list[dict]:
-    """Return the k most similar chunks, diversified across sources.
+def retrieve(query: str, k: int = TOP_K, per_source_cap: int = PER_SOURCE_CAP,
+             rerank_enabled: bool = True) -> list[dict]:
+    """Return the k best chunks: bi-encoder pool -> cross-encoder rerank -> diversify.
 
-    Over-fetches a candidate pool, then greedily keeps chunks in similarity order
-    while allowing at most `per_source_cap` chunks per source — preventing a
-    high-page-count source (e.g. a 50-page crawl) from flooding the top-k and
-    burying small but on-target sources. If the cap leaves fewer than k chunks,
-    the remaining slots are backfilled from the next-best leftovers.
+    The bi-encoder retrieves a wide candidate pool; the cross-encoder re-scores it
+    for sharper relevance; then chunks are kept in (reranked) order while allowing
+    at most `per_source_cap` per source — preventing a high-page-count source from
+    flooding the top-k and burying small on-target sources. If the cap leaves fewer
+    than k chunks, remaining slots are backfilled from the next-best leftovers.
     """
+    pool = RERANK_POOL if rerank_enabled else CANDIDATE_POOL
     res = get_collection().query(
-        query_embeddings=[embed_query(query)], n_results=max(CANDIDATE_POOL, k)
+        query_embeddings=[embed_query(query)], n_results=max(pool, k)
     )
     candidates = [
         {"text": doc, "distance": dist, **meta}
         for doc, dist, meta in zip(res["documents"][0], res["distances"][0], res["metadatas"][0])
     ]
 
+    if rerank_enabled:
+        from rag.reranker import rerank
+        candidates = rerank(query, candidates)
+
     chosen, leftovers, per_source = [], [], {}
-    for c in candidates:  # already in ascending-distance (best-first) order
+    for c in candidates:  # best-first order (reranked if enabled, else by distance)
         src = c.get("source", "")
         if per_source.get(src, 0) < per_source_cap:
             chosen.append(c)

@@ -9,17 +9,15 @@
 
 ## Domain
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
-
 My domain: The UW-Madison Startup Ecosystem: Bridging University Policy and Student Practice.
 
-This knowledge is valuable to student founders, as a lot of resources from the university, student orgs, and campus partners is siloed, and needs one concise place to retrieve all of it.
+This knowledge is valuable to student founders, as a lot of resources from the university, student orgs, and campus partners are siloed, and needs one concise place to retrieve all of it.
 
 ---
 
 ## Documents
 
-Our pipeline ingests 23 distinct operational sources across the university, regional accelerator, and peer community landscape:
+Our pipeline ingests 23 distinct operational sources across the university, regional accelerator, and madison community landscape:
 
 ```text
 +----+--------------------------------------------+-------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
@@ -47,7 +45,7 @@ Our pipeline ingests 23 distinct operational sources across the university, regi
 | 20 | 100state                                   | Diverse local coworking community focusing on civic engagement, young business professionals, and emerging builders.     | https://100state.com/                                                                     |
 | 21 | Gener8tor gBeta Madison                    | Highly competitive, non-equity accelerator program designed to quickly prepare high-growth student ventures for seed VC. | https://www.gener8tor.com/gbeta/frontier-technology-accelerator/                           |
 | 22 | Reddit UW-Madison Startup Search           | Unfiltered peer-to-peer forum threads revealing honest student opinions, troubleshooting, and advice on local resources. | https://www.reddit.com/r/UWMadison/search/?q=startup                                       |
-| 23 | Transcripts of Podcasts (The Foundry)       | Qualitative conversational records logging precise tactical narratives of student founders managing academics and MVPs.  | Local File Assets / [Manually Insert URL]                                                 |
+| 23 | Transcript of Wisconsin Startup - Jon Eckhardt Podcast       | Conversational record logging precise tactical narratives of Jon Eckhardt and UW-Madison managing entrepreneurship on campus | Local File Asset                                                 |
 +----+--------------------------------------------+-------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 
 ```
@@ -56,31 +54,28 @@ Our pipeline ingests 23 distinct operational sources across the university, regi
 
 ## Chunking Strategy
 
-<!-- How will you split documents into chunks?
-     State your chunk size (in tokens or characters), overlap size, and explain why those
-     numbers fit the structure of your documents.
-     A review-heavy corpus warrants different chunking than a long FAQ. -->
+> **Update during implementation:** I dropped this four-archetype asymmetric plan for a single markdown-aware recursive splitter (~512 tokens, 15% overlap). Once Reddit was excluded, two of the four archetypes had no documents, so a uniform splitter covered the remaining web pages and the report. See the README for details.
 
-**Chunk size:** Asymmetric Framework (Optimized by data archetype from 200 words to whole-document level)
+**Chunk size:** Varying (Asymmetric Framework, depends on data type from 200 words to whole-document level)
 
-**Overlap:** Asymmetric Framework (10% to 50% overlap depending on text fluidity)
+**Overlap:** Varying (Asymmetric Framework, 10% to 50% overlap depending on text fluidity)
 
 **Reasoning:**
-Because our corpus bridges high-level institutional strategy with unstructured student execution, a single uniform chunking strategy would split key data points across boundaries and strip away vital context. We utilize an asymmetric framework mapped across four distinct source architectures:
+I will utilize varying chunk size and overlap depending on four distinct source architectures:
 
-1. Formal PDF Frameworks (e.g., Eckhardt Report, WARF, Legal Clinic Rules): Semantic Parent-Child (Hierarchical)\*\* approach.
+1. Formal PDF Frameworks (Eckhardt PDF Report, WARF, Legal Clinic Rules): Semantic Parent-Child approach.
 
 - Documents are divided into large parent chunks based on Markdown headers (~1,000–1,500 words) to anchor macro-context, while smaller child chunks (~200 words, 10% overlap) are indexed for precise vector matching. If a child chunk is retrieved, the entire parent context is passed to the LLM to prevent legal hallucinations.
 
-2. Flat University Portals (e.g., Makerspace tool directories, Weinert program lists): Fixed-Size Token Chunking (~512 tokens)\*\* with a Medium Overlap (~10-15%)
+2. Flat University Portals (Makerspace tool directories, Weinert program lists): Fixed-Size Token Chunking (~512 tokens)\*\* with a Medium Overlap (~10-15%)
 
 - These pages serve primarily as reference directories packed with dense, localized keywords, room numbers, and contact points.
 - This ensures fast keyword retrieval and guarantees that specific machinery or program names are not sliced in half at a chunk boundary line.
 
-3. Conversational Transcripts (e.g., The Foundry, Startup Wisconsin Podcasts): Sliding Window strategy with a 400-word chunk size and an aggressive \*\*40-50% overlap (150-200 words)
+3. Conversational Transcripts (Startup Wisconsin Podcast): Sliding Window strategy with a 400-word chunk size and 40-50% overlap (150-200 words)
 
 - Ensure conversational prompts and answers remain tightly bound in vector space.
-- Human speech is fluid, unheadered, and non-linear. A student founder's tactical insight might be scattered across several paragraphs separated by an unrelated anecdote.
+- A podcast's insight might be scattered across several paragraphs separated by an unrelated anecdote.
 
 4. Scraped Reddit Threads (r/UWMadison Startup Queries): Document-Level (Whole-Thread) Chunking
 
@@ -91,8 +86,6 @@ Because our corpus bridges high-level institutional strategy with unstructured s
 
 ## Retrieval Approach
 
-<!-- Which embedding model are you using (e.g., all-MiniLM-L6-v2 via sentence-transformers)?
-     How many chunks will you retrieve per query (top-k)?
      If you were deploying this for real users and cost wasn't a constraint, what tradeoffs
      would you weigh in choosing a different embedding model — context length, multilingual
      support, accuracy on domain-specific text, latency? -->
@@ -101,25 +94,18 @@ Because our corpus bridges high-level institutional strategy with unstructured s
 
 ### Embedding Model
 
-We are leveraging **BAAI/bge-m3** run entirely locally on a MacBook Pro M3 Pro (32GB Unified Memory).
+I'm using the BAAI/bge-m3, running locally on my MacBook Pro (32GB memory).
 
-By utilizing Apple Silicon's shared unified memory architecture, we can bypass lightweight edge baselines (like `all-MiniLM-L6-v2`) and host a premium, top-tier embedding model directly on-device with sub-second vectorization latency.
+If this system were scaled to a massive production environment where local deployment limits were removed, the following architectural tradeoffs would guide my model choice:
 
-If this system were scaled to a massive production environment where local deployment limits were removed, the following architectural tradeoffs would guide our model choice:
-
-- **Context Length vs. Vector Data Truncation:** Moving from a strict 512-token limit to an 8,192-token capacity (native to `bge-m3`) is critical for capturing long-form narrative arcs inside our linear podcast transcripts without dropping text.
-- **Dimensional Accuracy:** Scaling from 384 dimensions up to 1,024+ dimensions allows the system to capture highly subtle semantic relationships—mapping a student's casual, conversational phrase (e.g., "how to split equity") directly to formal university documentation (e.g., "Law & Entrepreneurship Clinic Founder Shareholder Agreements").
-- **Domain-Specific Tokenization:** Standard web-trained models often mistake highly localized campus acronyms (like WARF, Grainger, Weinert, or gBETA) as random vocabulary strings. High-dimensional local architectures or enterprise technical APIs (like `voyage-3-large`) provide the exact technical vocabulary mapping required to treat these distinct campus entities as functionally related nodes.
+- Context Length: better embedding models have a larger token limit, so it could better capture podcast transcripts
+- Dimensional Accuracy: scalling dimensions means better subtle semantic relationship-mapping
+- Domain-Specific Tokenization: scaling to an enteprise technical API (like a voyage.ai model) would be better at mapping technical vocab to campus entities
 
 ### Top-k Retrieval Configuration
 
-We are setting our retrieval parameter to **top-k = 5**. This aligns with current production standards to balance context precision against model noise.
-
-Because our dataset uses an asymmetric chunking model, this parameter handles data density dynamically based on the source data type retrieved:
-
-- For **Granular Child Chunks & Flat Portals** (Legal rules, incubator criteria, makerspace directories), a top-k of 5 delivers roughly ~1,000 to 2,500 words of highly concentrated, fact-dense blocks optimized for precise keyword and rule lookups.
-- For **Sliding Window Transcripts** (Podcast narrative tracks), a top-k of 5 ensures that overlapping conversational fragments successfully capture continuous multi-paragraph dialogue flows without stripping out context.
-- For **Whole-Document Chunks** (Reddit threads), a top-k of 5 pulls a comprehensive sample of community consensus while preventing the system from ingesting excess conversational noise that would otherwise cause context distraction or exceed the generation model's optimal processing limits.
+top-k = 5
+This balances context precision against model noise. Works well for all chunking methods I am using.
 
 ---
 
@@ -133,11 +119,11 @@ Because our dataset uses an asymmetric chunking model, this parameter handles da
 +---+-----------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 | # | Question | Expected answer |
 +---+-----------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| 1 | If a student builds a software MVP in their dorm using personal devices and campus Wi-Fi, does WARF claim intellectual property? | No. Standard dorm use and Wi-Fi do not constitute "substantial university resources." IP remains fully owned by the student. |
+| 1 | If a student at UW-Madison is doing self-guided reserach and discovers something that could be monetizable and wants to turn it into a company, what should he do? | Start with the Tech Entrepreneurship Office (TEO), the campus bridge for turning research into a startup (commercial evaluation, IP/tech-transfer, investor and mentor connections); disclose any invention to WARF for IP/licensing. Use the Tech Exploration Lab for prototyping and Transcend UW for mentorship and pitch-competition funding. |
 | 2 | What does Jon Eckhardt's report identify as the primary ecosystem challenge and what action item does it recommend? | Systemic fragmentation across campus silos. It recommends creating a centralized, unified Wisconsin Entrepreneurship Hub. |
 | 3 | What specific service limits or prerequisites does the Law & Entrepreneurship Clinic establish for free student legal services? | Startups must clear an intake vetting showing they cannot afford private counsel and offer economic/operational value to WI. |
-| 4 | Under what specific academic course framework can a student qualify to receive equity investments from the Weinert Venture Funds? | Students must be enrolled in the WAVE Practicum (Wisconsin Applied Ventures in Entrepreneurship) course at the Weinert Center. |
-| 5 | What specific off-campus Madison alternative provides heavy tooling/CNC machinery when Grainger Engineering Makerspace is closed? | Sector67. A non-profit community hackerspace operating outside university hours, calendar restrictions, and enrollment status. |
+| 4 | I am a student at UW-Madison who likes venture capital and want to join an entrepreneurship club. What should I join? | BadgerVC — a student-led org that makes venture capital accessible to undergraduates through speaker events and workshops. For hands-on investing, also consider StratoVC, a student-run venture fund that makes real investments in idea-stage startups. |
+| 5 | What specific off-campus Madison alternative provides heavy tooling and CNC machinery when Grainger Engineering Makerspace is closed? | Sector67. A non-profit community hackerspace operating outside university hours, calendar restrictions, and enrollment status. |
 +---+-----------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
 
 ---
@@ -150,9 +136,9 @@ Because our dataset uses an asymmetric chunking model, this parameter handles da
 
 1. For the reddit one, the url i sent is just the titles of the relevant posts not the posts itself, so it may not be able to pull the necessary info. If the ingestion script does not actively follow each post link to extract the entire comment payload, the vector store will lack the data required to answer user queries truthfully.
 
-   **Resolution (during implementation):** Reddit was evaluated and **excluded**. Reddit hard-blocks automated access — both `requests` against the `.json` endpoints and a headless Playwright browser returned HTTP 403. Beyond the access block, the actual `r/UWMadison` "startup" threads were low-signal (cofounder-hunting posts, off-topic questions, threads with 0–1 answers), so they would have injected retrieval noise rather than peer insight. No evaluation question depends on Reddit, so the corpus ships with the 21 high-signal institutional sources instead.
+   Resolution (during implementation): Reddit was evaluated and excluded. Reddit hard-blocks automated access — both `requests` against the `.json` endpoints and a headless Playwright browser returned HTTP 403. Beyond the access block, the actual `r/UWMadison` "startup" threads were low-signal (cofounder-hunting posts, off-topic questions, threads with 0–1 answers), so they would have injected retrieval noise rather than peer insight. No evaluation question depends on Reddit, so the corpus ships with the 21 high-signal institutional sources instead.
 
-2. If the embedding model can only read the actually page of the url i sent, then many pages will be missing and the embedding model wont be abel to embed them. If a root page contains only a collection of external hyperlinks (e.g., pointing to separate pages for intake forms, eligibility requirements, or pricing), a simple scraper will only grab the link text. The underlying PDF downloads, secondary sub-directories, and sub-pages will remain entirely missing from the vector index.
+2. If the embedding model can only read the actually page of the url i sent, then many pages will be missing and the embedding model wont be abel to embed them. If a root page contains only a collection of external hyperlinks (pointing to separate pages for intake forms, eligibility requirements, or pricing), a simple scraper will only grab the link text. The underlying PDF downloads, secondary sub-directories, and sub-pages will remain entirely missing from the vector index.
 
 ---
 
@@ -224,31 +210,29 @@ Because our dataset uses an asymmetric chunking model, this parameter handles da
      "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
      with my specified chunk size and overlap" is a plan. -->
 
-### 1. Ingestion Pipeline & Scoped Crawler Implementation
+### 1. Ingestion and scraping
 
-- **AI Tool:** Claude 4.8 Opus
-- **Input Provided to AI:** \* The "Anticipated Challenges" section of this `planning.md` detailing the structural differences between static `wisc.edu` HTML pages and dynamic Javascript-hydrated Reddit threads.
-  - Explicit instructions requiring the use of `Playwright` for headless browser automation and `BeautifulSoup` for static parsing.
-- **Expected Output:** An operational Python script containing two core modules:
-  1. A lightweight `StaticScraper` using `requests` and `BeautifulSoup` that targets institutional domains, handles clean Markdown formatting translation (converting `<h1>` to `#`, `<ul>` to `-`), and strips headers/footers.
-  2. A `DynamicScraper` using `Playwright` configured to emulate a live browser session, navigate the r/UWMadison search tree, execute page scrolling to load lazy-loaded comment strings, and extract the complete text payload into clean JSON objects.
+- **AI tool:** Claude Opus 4.8
+- **Input:** The "Anticipated Challenges" section, which explains the difference between static `wisc.edu` HTML pages and JavaScript-heavy pages like Reddit. I'll ask for `BeautifulSoup` on the static pages and `Playwright` on the dynamic ones.
+- **Expected output:** A Python script with two parts. A static scraper (`requests` + `BeautifulSoup`) that pulls the institutional pages, converts them to markdown (`<h1>` to `#`, `<ul>` to `-`), and strips nav/header/footer. A dynamic scraper (`Playwright`) for Reddit that scrolls to load comments and saves the text as JSON.
+- **How I'll verify:** Run it on a few sources and check that the saved files contain real page text, not navigation boilerplate.
 
-### 2. Router-Based Asymmetric Chunking Engine
+### 2. Chunking
 
-- **AI Tool:** Claude 3.5 Sonnet
-- **Input Provided to AI:** \* The complete "Chunking Strategy" section of this document detailing our four explicit data archetypes (Semantic Parent-Child, Fixed-Size Token, Sliding Window, and Document-Level).
-  - The technical pseudo-code logic paths mapping out the chunk boundaries, token sizes, and targeted overlap percentages (10% up to 50%).
-- **Expected Output:** A unified data preprocessing module (`chunking_engine.py`) implementing a master routing function. The AI must produce precise, bug-free implementations of the sentence-boundary parsing for Parent-Child matching, matrix slicing rules for the sliding narrative windows, and a safe recursive loop ensuring no text blocks cut words or structural token arrays directly in half.
+- **AI tool:** Claude Opus 4.8
+- **Input:** The "Chunking Strategy" section, with the source archetypes and the target chunk sizes and overlaps.
+- **Expected output:** A chunking module that splits each document to the right size with the right overlap and never cuts a word in half.
+- **How I'll verify:** Spot-check the chunk sizes and confirm no chunk ends mid-word.
 
-### 3. Metadata Enrichment Optimization
+### 3. Metadata for the vector store
 
-- **AI Tool:** ChatGPT (GPT-4o) / Cursor
-- **Input Provided to AI:** \* The "Retrieval Approach" section of this document highlighting our choice of the high-dimensional `BAAI/bge-m3` local embedding model.
-  - Samples of our raw source tracking requirements (Domain, Parent Hub, and Exact URL fields).
-- **Expected Output:** A data structuring script that automatically intercept chunks during the splitting phase, wraps them in strict JSON dictionaries containing vector-ready payloads, and structures the exact metadata layout required by our local vector store (e.g., Chroma or LanceDB) to guarantee seamless source attribution filtering during the evaluation phase.
+- **AI tool:** Claude Opus 4.8
+- **Input:** The "Retrieval Approach" section (the `BAAI/bge-m3` local model) and the fields I want tracked per chunk (source name, hub/category, exact URL).
+- **Expected output:** Code that attaches that metadata to each chunk in the format ChromaDB expects, so an answer can be traced back to its source.
+- **How I'll verify:** Confirm every chunk in the store carries its source and URL, and that a retrieved chunk maps back to a real document.
 
 **Milestone 3 — Ingestion and chunking:**
-
+1,158 chunks across 22 documents
 **Milestone 4 — Embedding and retrieval:**
 
 **Milestone 5 — Generation and interface:**
