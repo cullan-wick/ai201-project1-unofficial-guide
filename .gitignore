@@ -16,5 +16,8 @@ env/
 chroma_db/
 chroma/
 
+# Downloaded raw PDF binaries (reproducible from the pipeline)
+documents/_raw/
+
 # macOS
 .DS_Store

@@ -1,0 +1,197 @@
+[
+  {
+    "id": 1,
+    "slug": "wisconsin-entrepreneurship-hub",
+    "status": "ok",
+    "word_count": 6846,
+    "method": "crawl",
+    "pages": 10,
+    "url": "https://entrepreneurship.wisc.edu/"
+  },
+  {
+    "id": 2,
+    "slug": "empowering-the-wisconsin-idea",
+    "status": "ok",
+    "word_count": 16002,
+    "url": "https://news.wisc.edu/content/uploads/2024/09/EmpoweringtheWisconsinIdea-Report-Final4-Accessible-3.pdf"
+  },
+  {
+    "id": 3,
+    "slug": "tech-entrepreneurship-office",
+    "status": "ok",
+    "word_count": 24891,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://teo.wisc.edu/"
+  },
+  {
+    "id": 4,
+    "slug": "entrepreneurship-science-lab",
+    "status": "ok",
+    "word_count": 2953,
+    "method": "crawl",
+    "pages": 16,
+    "url": "https://eslab.wisc.edu/"
+  },
+  {
+    "id": 5,
+    "slug": "warf-starting-a-company",
+    "status": "ok",
+    "word_count": 24224,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://www.warf.org/commercialize/starting-a-company/"
+  },
+  {
+    "id": 6,
+    "slug": "weinert-center",
+    "status": "ok",
+    "word_count": 859,
+    "method": "crawl",
+    "pages": 1,
+    "url": "https://business.wisc.edu/centers/weinert/"
+  },
+  {
+    "id": 7,
+    "slug": "law-entrepreneurship-clinic",
+    "status": "ok",
+    "word_count": 1991,
+    "method": "crawl",
+    "pages": 6,
+    "url": "https://law.wisc.edu/uwle/services/"
+  },
+  {
+    "id": 8,
+    "slug": "sbdc-uw-madison",
+    "status": "ok",
+    "word_count": 54449,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://sbdc.wisc.edu/"
+  },
+  {
+    "id": 9,
+    "slug": "tech-exploration-lab",
+    "status": "ok",
+    "word_count": 21449,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://techexplorationlab.wisc.edu/"
+  },
+  {
+    "id": 10,
+    "slug": "grainger-design-innovation-lab",
+    "status": "ok",
+    "word_count": 23408,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://making.engr.wisc.edu/"
+  },
+  {
+    "id": 11,
+    "slug": "startup-learning-community",
+    "status": "ok",
+    "word_count": 864,
+    "method": "crawl",
+    "pages": 1,
+    "url": "https://www.housing.wisc.edu/undergraduate/communities/startup/"
+  },
+  {
+    "id": 12,
+    "slug": "transcend-uw",
+    "status": "ok",
+    "word_count": 8348,
+    "method": "crawl",
+    "pages": 17,
+    "url": "https://www.transcenduw.com/"
+  },
+  {
+    "id": 13,
+    "slug": "women-in-entrepreneurship",
+    "status": "ok",
+    "word_count": 1183,
+    "method": "crawl",
+    "pages": 5,
+    "url": "https://womeninentrepreneurship-uw.vercel.app/"
+  },
+  {
+    "id": 14,
+    "slug": "badger-future-founders",
+    "status": "ok",
+    "word_count": 144,
+    "method": "crawl",
+    "pages": 1,
+    "url": "https://www.badgerfuturefounders.com/"
+  },
+  {
+    "id": 15,
+    "slug": "strato-vc",
+    "status": "ok",
+    "word_count": 1210,
+    "method": "crawl",
+    "pages": 10,
+    "url": "https://stratovc.com/"
+  },
+  {
+    "id": 16,
+    "slug": "badger-vc",
+    "status": "ok",
+    "word_count": 6665,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://www.badgervc.com/"
+  },
+  {
+    "id": 17,
+    "slug": "starting-block-madison",
+    "status": "ok",
+    "word_count": 18477,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://www.startingblockmadison.org/"
+  },
+  {
+    "id": 18,
+    "slug": "sector67",
+    "status": "ok",
+    "word_count": 2726,
+    "method": "crawl",
+    "pages": 1,
+    "url": "https://www.sector67.org/blog/"
+  },
+  {
+    "id": 19,
+    "slug": "capital-entrepreneurs",
+    "status": "ok",
+    "word_count": 8849,
+    "method": "crawl",
+    "pages": 20,
+    "url": "https://capitalentrepreneurs.com/"
+  },
+  {
+    "id": 20,
+    "slug": "100state",
+    "status": "ok",
+    "word_count": 21863,
+    "method": "crawl",
+    "pages": 50,
+    "url": "https://100state.com/"
+  },
+  {
+    "id": 21,
+    "slug": "gener8tor-gbeta",
+    "status": "ok",
+    "word_count": 2121,
+    "method": "crawl",
+    "pages": 1,
+    "url": "https://www.gener8tor.com/gbeta/frontier-technology-accelerator"
+  },
+  {
+    "id": 23,
+    "slug": "podcast-transcripts-jon-eckhardt-startup-wisconsin",
+    "status": "ok",
+    "word_count": 11105,
+    "method": "transcript-manual",
+    "url": "file://jon-eckhardt-startup-wisconsin.txt"
+  }
+]
